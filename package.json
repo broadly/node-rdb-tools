@@ -24,7 +24,7 @@
   "dependencies": {
     "buffer-equal": "0.0.1",
     "int64-native": "^0.4.0",
-    "lzf": "@broadly/lzf",
+    "@broadly/lzf": "^0.3.1",
     "nan": "^2.0.9",
     "stream-parser": "~0.3.1"
   },
