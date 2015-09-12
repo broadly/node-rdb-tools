@@ -27,18 +27,19 @@ class Crc64 : public ObjectWrap {
 public:
 
   static void Init(Handle<Object> exports) {
-    NanScope();
-    Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(Crc64::New);
+    Nan::HandleScope scope;
 
-    tmpl->SetClassName(NanNew("Crc64"));
+    // Prepare constructor template
+    v8::Local<v8::FunctionTemplate> tmpl = Nan::New<v8::FunctionTemplate>(New);
+    tmpl->SetClassName(Nan::New("Crc64").ToLocalChecked());
     tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    NODE_SET_PROTOTYPE_METHOD(tmpl, "push",  Push);
-    NODE_SET_PROTOTYPE_METHOD(tmpl, "value", GetValue);
+    // Prototype
+    Nan::SetPrototypeMethod(tmpl, "push", Push);
+    Nan::SetPrototypeMethod(tmpl, "value", GetValue);
 
-    NanAssignPersistent(functionTemplate, tmpl);
-    NanAssignPersistent(constructor, tmpl->GetFunction());
-    exports->Set(NanNew("Crc64"), tmpl->GetFunction());
+    constructor.Reset(tmpl->GetFunction());
+    exports->Set(Nan::New("Crc64").ToLocalChecked(), tmpl->GetFunction());
   }
 
 private:
@@ -50,43 +51,45 @@ private:
   ~Crc64() {
   }
 
+
   static NAN_METHOD(New) {
-    NanScope();
     Crc64* instance = new Crc64();
-    instance->Wrap(args.This());
-    NanReturnThis();
+    instance->Wrap( info.This() );
+    info.GetReturnValue().Set( info.This() );
   }
+
 
   static NAN_METHOD(Push) {
-    NanScope();
-    if (args.Length() != 1 || !Buffer::HasInstance(args[0]))
-      return NanThrowError("Expecting a single Buffer argument");
+    if (info.Length() != 1 || !Buffer::HasInstance(info[0])) {
+      Nan::ThrowError("Expecting a single Buffer argument");
+      return;
+    }
 
-    Crc64* instance = ObjectWrap::Unwrap<Crc64>(args.Holder());
-    Local<Object> bytes = args[0]->ToObject();
+    Crc64* instance = ObjectWrap::Unwrap<Crc64>(info.Holder());
+    Local<Object> bytes = info[0]->ToObject();
     instance->crc = crc64(instance->crc, (unsigned char *)Buffer::Data(bytes), Buffer::Length(bytes));
-    NanReturnUndefined();
+    info.GetReturnValue().Set( Nan::Undefined() );
   }
+
 
   static NAN_METHOD(GetValue) {
-    NanScope();
-    if (args.Length() != 0)
-      return NanThrowError("Unexpected arguments");
+    if (info.Length() != 0) {
+      Nan::ThrowError("Unexpected arguments");
+      return;
+    }
 
-    Crc64* instance = ObjectWrap::Unwrap<Crc64>(args.Holder());
-    Local<Object> BufferOut = NanNewBufferHandle((char*)&(instance->crc), sizeof(uint64_t));
-    NanReturnValue(BufferOut);
+    Crc64* instance = ObjectWrap::Unwrap<Crc64>(info.Holder());
+    MaybeLocal<Object> BufferOut = Nan::CopyBuffer((char*)&(instance->crc), sizeof(uint64_t));
+    info.GetReturnValue().Set( BufferOut.ToLocalChecked() );
   }
 
-  static Persistent<FunctionTemplate> functionTemplate;
-  static Persistent<Function>         constructor;
 
+  static Nan::Persistent<v8::Function> constructor;
   uint64_t crc;
 };
 
 
-Persistent<FunctionTemplate> Crc64::functionTemplate;
-Persistent<Function>         Crc64::constructor;
+Nan::Persistent<v8::Function> Crc64::constructor;
 
 
 extern "C" {
@@ -97,3 +100,4 @@ extern "C" {
 
   NODE_MODULE(Crc64, init)
 };
+

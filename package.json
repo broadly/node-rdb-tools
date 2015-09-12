@@ -22,18 +22,18 @@
     "Parser"
   ],
   "dependencies": {
-    "buffer-equal": "0.0.0",
-    "int64-native-node12": "^0.4.0",
-    "lzf": "git+https://github.com/kieut/node-lzf.git",
-    "nan": "^1.8.4",
-    "stream-parser": "~0.1.0"
+    "buffer-equal": "0.0.1",
+    "int64-native": "^0.4.0",
+    "lzf": "@broadly/lzf",
+    "nan": "^2.0.9",
+    "stream-parser": "~0.3.1"
   },
   "devDependencies": {
     "mocha": "~1.11.0",
     "chai": "~1.7.2",
     "underscore": "~1.4.4",
     "istanbul": "~0.1.40",
-    "bl": "~0.1.1"
+    "bl": "~1.0.0"
   },
   "bin": {
     "rdbdump": "./bin/rdbdump"
